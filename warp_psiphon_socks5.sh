@@ -346,20 +346,22 @@ normalize_country() {
 select_country() {
   local country
 
-  info "Psiphon country list source: ${COUNTRY_SOURCE}"
-  format_country_list
+  {
+    info "Psiphon country list source: ${COUNTRY_SOURCE}"
+    format_country_list
+  } >&2
   while true; do
     read -r -p "Choose country code (two uppercase letters, e.g. JP/SG/US): " country
     country="$(printf '%s' "${country}" | tr '[:lower:]' '[:upper:]')"
     if [[ -z "${country}" ]]; then
-      warn "Country code cannot be empty."
+      warn "Country code cannot be empty." >&2
       continue
     fi
     if is_supported_country "${country}"; then
       echo "${country}"
       return
     fi
-    warn "Unsupported country code: ${country}"
+    warn "Unsupported country code: ${country}" >&2
   done
 }
 
