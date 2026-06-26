@@ -404,17 +404,24 @@ stop_process() {
 }
 
 download_binary() {
-  local arch url
+  local arch url tmp
   arch="$(detect_arch)"
   url="https://raw.githubusercontent.com/yonggekkk/x-ui-yg/main/xuiwpph_${arch}"
+  tmp="${BIN_PATH}.download.$$"
 
   mkdir -p "${BASE_DIR}"
+  stop_process
+  rm -f "${tmp}"
   info "Downloading xuiwpph_${arch} ..."
-  if ! curl -fL --retry 3 -o "${BIN_PATH}" "${url}"; then
+  if ! curl -fL --retry 3 -o "${tmp}" "${url}"; then
     warn "Normal download failed, retrying with --insecure."
-    curl -fL --retry 3 --insecure -o "${BIN_PATH}" "${url}"
+    curl -fL --retry 3 --insecure -o "${tmp}" "${url}" || {
+      rm -f "${tmp}"
+      return 1
+    }
   fi
-  chmod +x "${BIN_PATH}"
+  chmod +x "${tmp}"
+  mv -f "${tmp}" "${BIN_PATH}"
 }
 
 write_config() {
