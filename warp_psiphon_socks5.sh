@@ -36,6 +36,9 @@ RUNTIME_LOG_PATH="${BASE_DIR}/runtime.log"
 ENDPOINT="162.159.192.1:2408"
 DEFAULT_BIND="127.0.0.1"
 DEFAULT_PORT="40000"
+DEFAULT_RETRIES_PER_COUNTRY="3"
+DEFAULT_PROXY_TEST_DELAY="20"
+DEFAULT_PROXY_TEST_TIMEOUT="20"
 COUNTRY_SOURCE_URL="https://raw.githubusercontent.com/bepass-org/warp-plus/master/README.md"
 
 FALLBACK_COUNTRIES=(
@@ -507,19 +510,54 @@ start_proxy() {
 test_proxy() {
   local port="$1"
   local result
+  local delay="${PROXY_TEST_DELAY:-${DEFAULT_PROXY_TEST_DELAY}}"
+  local timeout="${PROXY_TEST_TIMEOUT:-${DEFAULT_PROXY_TEST_TIMEOUT}}"
 
-  info "Requesting IP through Socks5. This may take about 20 seconds ..."
-  sleep 20
-  result="$(curl -s --max-time 20 --socks5-hostname "127.0.0.1:${port}" https://icanhazip.com || true)"
+  info "Requesting IP through Socks5 after ${delay}s startup wait ..."
+  sleep "${delay}"
+  result="$(curl -s --max-time "${timeout}" --socks5-hostname "127.0.0.1:${port}" https://icanhazip.com || true)"
   if [[ -z "${result}" ]]; then
-    err "WARP-plus-Socks5 IP check failed. Try another country code."
-    status || true
     return 1
   fi
 
   ok "WARP-plus-Socks5 is ready."
   ok "Socks5: 127.0.0.1:${port}"
   ok "Proxy IP: ${result}"
+}
+
+retry_selected_country() {
+  local country="$1"
+  local port="$2"
+  local bind_addr="$3"
+  local ip_version="$4"
+  local retries="${RETRIES_PER_COUNTRY:-${DEFAULT_RETRIES_PER_COUNTRY}}"
+  local attempt
+
+  if ! [[ "${retries}" =~ ^[1-9][0-9]*$ ]]; then
+    warn "Invalid RETRIES_PER_COUNTRY=${retries}; using ${DEFAULT_RETRIES_PER_COUNTRY}."
+    retries="${DEFAULT_RETRIES_PER_COUNTRY}"
+  fi
+
+  for ((attempt = 1; attempt <= retries; attempt++)); do
+    info "Trying Psiphon country ${country} (${attempt}/${retries}) ..."
+    write_config "${country}" "${port}" "${bind_addr}" "${ip_version}"
+    start_proxy "${port}"
+
+    if test_proxy "${port}"; then
+      ok "Selected country is working: ${country}"
+      return
+    fi
+
+    warn "Country ${country} failed on attempt ${attempt}/${retries}."
+    stop_process
+    if ((attempt < retries)); then
+      sleep 3
+    fi
+  done
+
+  err "WARP-plus-Socks5 IP check failed after ${retries} attempts for country ${country}."
+  err "The service has been stopped. Try the same country later, or rerun and choose another country manually."
+  exit 1
 }
 
 install_or_restart() {
@@ -558,14 +596,11 @@ install_or_restart() {
     warn "BIND is ${bind_addr}. Make sure your firewall does not expose an open Socks5 proxy unintentionally."
   fi
 
-  install_deps
   download_binary
   ip_version="$(detect_ip_version)"
-  write_config "${country}" "${port}" "${bind_addr}" "${ip_version}"
   write_runner
   setup_autostart
-  start_proxy "${port}"
-  test_proxy "${port}"
+  retry_selected_country "${country}" "${port}" "${bind_addr}" "${ip_version}"
 }
 
 status() {

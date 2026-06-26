@@ -27,6 +27,7 @@ bash warp_psiphon_socks5.sh
 - 模式：多地区 Psiphon，等同原脚本的 `--cfon --country XX`
 - 开机自启：优先 systemd，非 systemd 环境回退到 cron
 - 环境依赖：自动识别系统包管理器和 CPU 架构，只补装缺失依赖，已存在的不会重复安装
+- 连通性检测：只重试你选择的地区，默认最多尝试 3 次，不会自动切换到其它地区
 
 指定国家和端口：
 
@@ -38,6 +39,12 @@ bash warp_psiphon_socks5.sh install JP 40000
 
 ```bash
 COUNTRY=SG PORT=40000 bash warp_psiphon_socks5.sh install
+```
+
+调整同一区重试次数或检测等待时间：
+
+```bash
+RETRIES_PER_COUNTRY=5 PROXY_TEST_DELAY=30 bash warp_psiphon_socks5.sh install HU 40000
 ```
 
 ## 管理命令
