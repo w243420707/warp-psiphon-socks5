@@ -46,37 +46,37 @@ FALLBACK_COUNTRIES=(
 )
 SUPPORTED_COUNTRIES=("${FALLBACK_COUNTRIES[@]}")
 
-COUNTRY_NAME_DATA='AT|Austria
-AU|Australia
-BE|Belgium
-BG|Bulgaria
-CA|Canada
-CH|Switzerland
-CZ|Czech Republic
-DE|Germany
-DK|Denmark
-EE|Estonia
-ES|Spain
-FI|Finland
-FR|France
-GB|United Kingdom
-HR|Croatia
-HU|Hungary
-IE|Ireland
-IN|India
-IT|Italy
-JP|Japan
-LV|Latvia
-NL|Netherlands
-NO|Norway
-PL|Poland
-PT|Portugal
-RO|Romania
-RS|Serbia
-SE|Sweden
-SG|Singapore
-SK|Slovakia
-US|United States'
+COUNTRY_NAME_DATA='AT|Austria / 奥地利
+AU|Australia / 澳大利亚
+BE|Belgium / 比利时
+BG|Bulgaria / 保加利亚
+CA|Canada / 加拿大
+CH|Switzerland / 瑞士
+CZ|Czech Republic / 捷克
+DE|Germany / 德国
+DK|Denmark / 丹麦
+EE|Estonia / 爱沙尼亚
+ES|Spain / 西班牙
+FI|Finland / 芬兰
+FR|France / 法国
+GB|United Kingdom / 英国
+HR|Croatia / 克罗地亚
+HU|Hungary / 匈牙利
+IE|Ireland / 爱尔兰
+IN|India / 印度
+IT|Italy / 意大利
+JP|Japan / 日本
+LV|Latvia / 拉脱维亚
+NL|Netherlands / 荷兰
+NO|Norway / 挪威
+PL|Poland / 波兰
+PT|Portugal / 葡萄牙
+RO|Romania / 罗马尼亚
+RS|Serbia / 塞尔维亚
+SE|Sweden / 瑞典
+SG|Singapore / 新加坡
+SK|Slovakia / 斯洛伐克
+US|United States / 美国'
 COUNTRY_SOURCE="fallback"
 
 info() { printf "${BLUE}%s${PLAIN}\n" "$*"; }
